@@ -95,6 +95,35 @@ Request:
 
 A successful request updates both balances in one SQLite transaction and creates a transfer record.
 
+## Business rules
+
+- Treat amounts must be positive whole numbers.
+- The recipient must exist and cannot be Whiskers.
+- Whiskers must have enough treats for the transfer.
+- A failed transfer changes no balances and creates no transfer record.
+- Balances cannot become negative.
+
+## Decisions and trade-offs
+
+- Whiskers represents the authenticated wallet owner. Authentication was intentionally excluded so the exercise stays focused on money movement.
+- Treats are stored as integers to avoid floating-point currency errors.
+- SQLite provides real persistence with almost no local setup.
+- `better-sqlite3` keeps the data layer small and makes the balance updates and transfer record easy to wrap in one synchronous transaction.
+- Bootstrap provides responsive, accessible form primitives without introducing a custom design system.
+- The frontend uses local React state because this single-screen flow does not justify a global state library.
+- Transfer records are persisted for correctness and auditing, but a transaction-history interface is outside this slice.
+
+## Intentionally skipped
+
+- Authentication and registration
+- Sender switching
+- Cat management
+- Wallet top-ups
+- Transaction-history UI
+- Notifications
+- Multiple currencies
+- Production deployment infrastructure
+
 ## Verification
 
 Backend:
