@@ -17,7 +17,7 @@ export default function Home() {
   const [recipientId, setRecipientId] = useState("");
   const [amount, setAmount] = useState("");
   const [submitting, setSubmitting] = useState(false);
-  const [, setTransferResult] = useState<TransferResult | null>(null);
+  const [transferResult, setTransferResult] = useState<TransferResult | null>(null);
   const [, setSubmissionError] = useState<string | null>(null);
 
   const amountValue = Number(amount);
@@ -65,6 +65,12 @@ export default function Home() {
     } finally {
       setSubmitting(false);
     }
+  };
+
+  const handleSendMore = () => {
+    setTransferResult(null);
+    setRecipientId("");
+    setAmount("");
   };
 
   useEffect(() => {
@@ -133,6 +139,29 @@ export default function Home() {
         {!loading && wallet && !error && (
           <section className={`card border-0 shadow-sm mx-auto ${styles.transferCard}`}>
             <div className="card-body p-4 p-sm-5">
+              {transferResult ? (
+                <div className="text-center">
+                  <div className="display-5 mb-3" aria-hidden="true">🎉</div>
+                  <h1 className="h3 fw-bold mb-2">Treats Sent Successfully!</h1>
+                  <p className="text-body-secondary mb-4">Your treats are on their way.</p>
+
+                  <div className={`rounded-3 p-4 mb-4 ${styles.sender}`}>
+                    <div className="fw-semibold">🐱 {transferResult.transfer.sender.name}</div>
+                    <div className="text-primary fs-4 my-2" aria-hidden="true">↓</div>
+                    <div className="h3 fw-bold mb-2">{transferResult.transfer.amount} 🍪</div>
+                    <div className="text-primary fs-4 mb-2" aria-hidden="true">↓</div>
+                    <div className="fw-semibold">🐱 {transferResult.transfer.recipient.name}</div>
+                  </div>
+
+                  <p className="mb-4">
+                    Remaining balance: <strong>{transferResult.remainingBalance} 🍪</strong>
+                  </p>
+                  <button className="btn btn-primary btn-lg w-100 fw-semibold" type="button" onClick={handleSendMore}>
+                    Send More Treats
+                  </button>
+                </div>
+              ) : (
+                <>
               <div className="mb-4">
                 <h1 className="h3 fw-bold mb-2">Send Treats</h1>
                 <p className="text-body-secondary mb-0">Share some treats with a feline friend.</p>
@@ -195,6 +224,8 @@ export default function Home() {
                   ) : "Send Treats 🍪"}
                 </button>
               </form>
+                </>
+              )}
             </div>
           </section>
         )}
