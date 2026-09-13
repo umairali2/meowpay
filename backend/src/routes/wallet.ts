@@ -1,6 +1,7 @@
 import { Router } from "express";
 import type { MeowPayDatabase } from "../database/database.js";
 import { CURRENT_WALLET_ID } from "../database/seed.js";
+import { apiErrors } from "../errors.js";
 
 type WalletRow = {
   id: number;
@@ -11,18 +12,13 @@ type WalletRow = {
 export function createWalletRouter(database: MeowPayDatabase) {
   const router = Router();
 
-  router.get("/", (_request, response) => {
+  router.get("/", (_request, response, next) => {
     const wallet = database
       .prepare("SELECT id, name, balance FROM cats WHERE id = ?")
       .get(CURRENT_WALLET_ID) as WalletRow | undefined;
 
     if (!wallet) {
-      response.status(404).json({
-        error: {
-          code: "WALLET_NOT_FOUND",
-          message: "Current wallet was not found.",
-        },
-      });
+      next(apiErrors.walletNotFound());
       return;
     }
 

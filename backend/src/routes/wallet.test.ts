@@ -30,6 +30,25 @@ describe("GET /api/wallet", () => {
     const response = await request(createApp(database)).get("/api/wallet");
 
     expect(response.status).toBe(404);
-    expect(response.body.error.code).toBe("WALLET_NOT_FOUND");
+    expect(response.body).toEqual({
+      error: {
+        code: "WALLET_NOT_FOUND",
+        message: "Current wallet was not found.",
+      },
+    });
+  });
+
+  it("hides unexpected internal errors", async () => {
+    database.exec("DROP TABLE cats");
+
+    const response = await request(createApp(database)).get("/api/wallet");
+
+    expect(response.status).toBe(500);
+    expect(response.body).toEqual({
+      error: {
+        code: "INTERNAL_ERROR",
+        message: "Something went wrong.",
+      },
+    });
   });
 });

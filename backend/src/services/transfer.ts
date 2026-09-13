@@ -1,18 +1,6 @@
 import type { MeowPayDatabase } from "../database/database.js";
 import { CURRENT_WALLET_ID } from "../database/seed.js";
-
-export type TransferErrorCode =
-  | "INVALID_AMOUNT"
-  | "RECIPIENT_NOT_FOUND"
-  | "SELF_TRANSFER_NOT_ALLOWED"
-  | "WALLET_NOT_FOUND"
-  | "INSUFFICIENT_BALANCE";
-
-export class TransferError extends Error {
-  constructor(public readonly code: TransferErrorCode) {
-    super(code);
-  }
-}
+import { apiErrors } from "../errors.js";
 
 type CatRow = {
   id: number;
@@ -27,15 +15,15 @@ type TransferRow = {
 
 export function createTransfer(database: MeowPayDatabase, recipientId: number, amount: number) {
   if (!Number.isInteger(amount) || amount <= 0) {
-    throw new TransferError("INVALID_AMOUNT");
+    throw apiErrors.invalidAmount();
   }
 
   if (!Number.isInteger(recipientId)) {
-    throw new TransferError("RECIPIENT_NOT_FOUND");
+    throw apiErrors.recipientNotFound();
   }
 
   if (recipientId === CURRENT_WALLET_ID) {
-    throw new TransferError("SELF_TRANSFER_NOT_ALLOWED");
+    throw apiErrors.selfTransfer();
   }
 
   return database.transaction(() => {
@@ -47,11 +35,11 @@ export function createTransfer(database: MeowPayDatabase, recipientId: number, a
       .get(recipientId) as CatRow | undefined;
 
     if (!sender) {
-      throw new TransferError("WALLET_NOT_FOUND");
+      throw apiErrors.walletNotFound();
     }
 
     if (!recipient) {
-      throw new TransferError("RECIPIENT_NOT_FOUND");
+      throw apiErrors.recipientNotFound();
     }
 
     const deduction = database
@@ -59,7 +47,7 @@ export function createTransfer(database: MeowPayDatabase, recipientId: number, a
       .run(amount, sender.id, amount);
 
     if (deduction.changes !== 1) {
-      throw new TransferError("INSUFFICIENT_BALANCE");
+      throw apiErrors.insufficientBalance();
     }
 
     database.prepare("UPDATE cats SET balance = balance + ? WHERE id = ?").run(amount, recipient.id);
