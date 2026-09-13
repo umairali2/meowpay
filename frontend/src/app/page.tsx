@@ -1,8 +1,8 @@
 "use client";
 
-import { useCallback, useEffect, useState } from "react";
-import { getRecipients, getWallet } from "@/lib/api";
-import type { Cat, Wallet } from "@/types/api";
+import { useCallback, useEffect, useState, type FormEvent } from "react";
+import { createTransfer, getRecipients, getWallet } from "@/lib/api";
+import type { Cat, TransferResult, Wallet } from "@/types/api";
 import styles from "./page.module.css";
 
 function fetchWalletData() {
@@ -16,6 +16,9 @@ export default function Home() {
   const [error, setError] = useState<string | null>(null);
   const [recipientId, setRecipientId] = useState("");
   const [amount, setAmount] = useState("");
+  const [submitting, setSubmitting] = useState(false);
+  const [, setTransferResult] = useState<TransferResult | null>(null);
+  const [, setSubmissionError] = useState<string | null>(null);
 
   const amountValue = Number(amount);
   const amountError = amount && (!Number.isInteger(amountValue) || amountValue <= 0)
@@ -39,6 +42,30 @@ export default function Home() {
       setLoading(false);
     }
   }, []);
+
+  const handleSubmit = async (event: FormEvent<HTMLFormElement>) => {
+    event.preventDefault();
+
+    if (!wallet || !formIsValid || submitting) {
+      return;
+    }
+
+    setSubmitting(true);
+    setSubmissionError(null);
+
+    try {
+      const result = await createTransfer({
+        recipientId: Number(recipientId),
+        amount: amountValue,
+      });
+      setTransferResult(result);
+      setWallet({ ...wallet, balance: result.remainingBalance });
+    } catch {
+      setSubmissionError("Unable to send treats. Please try again.");
+    } finally {
+      setSubmitting(false);
+    }
+  };
 
   useEffect(() => {
     let active = true;
@@ -119,7 +146,7 @@ export default function Home() {
                 </div>
               </div>
 
-              <form onSubmit={(event) => event.preventDefault()}>
+              <form onSubmit={handleSubmit}>
                 <div className="mb-3">
                   <label className="form-label fw-semibold" htmlFor="recipient">Send to</label>
                   <select
@@ -127,6 +154,7 @@ export default function Home() {
                     id="recipient"
                     value={recipientId}
                     onChange={(event) => setRecipientId(event.target.value)}
+                    disabled={submitting}
                     required
                   >
                     <option value="">Select a cat</option>
@@ -150,6 +178,7 @@ export default function Home() {
                       placeholder="0"
                       value={amount}
                       onChange={(event) => setAmount(event.target.value)}
+                      disabled={submitting}
                       required
                     />
                     <span className="input-group-text">🍪</span>
@@ -157,8 +186,13 @@ export default function Home() {
                   </div>
                 </div>
 
-                <button className="btn btn-primary btn-lg w-100 fw-semibold" type="submit" disabled={!formIsValid}>
-                  Send Treats 🍪
+                <button className="btn btn-primary btn-lg w-100 fw-semibold" type="submit" disabled={!formIsValid || submitting}>
+                  {submitting ? (
+                    <>
+                      <span className="spinner-border spinner-border-sm me-2" aria-hidden="true" />
+                      Sending treats...
+                    </>
+                  ) : "Send Treats 🍪"}
                 </button>
               </form>
             </div>
