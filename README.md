@@ -21,7 +21,7 @@ MeowPay is a thin, end-to-end digital wallet slice where Whiskers sends treats t
 
 ## Requirements
 
-- Node.js 20.9 or newer
+- Node.js 20.19 or newer
 - npm
 
 ## Run locally
