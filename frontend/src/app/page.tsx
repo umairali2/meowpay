@@ -1,7 +1,7 @@
 "use client";
 
 import { useCallback, useEffect, useState, type FormEvent } from "react";
-import { createTransfer, getRecipients, getWallet } from "@/lib/api";
+import { ApiClientError, createTransfer, getRecipients, getWallet } from "@/lib/api";
 import type { Cat, TransferResult, Wallet } from "@/types/api";
 import styles from "./page.module.css";
 
@@ -18,7 +18,7 @@ export default function Home() {
   const [amount, setAmount] = useState("");
   const [submitting, setSubmitting] = useState(false);
   const [transferResult, setTransferResult] = useState<TransferResult | null>(null);
-  const [, setSubmissionError] = useState<string | null>(null);
+  const [submissionError, setSubmissionError] = useState<string | null>(null);
 
   const amountValue = Number(amount);
   const amountError = amount && (!Number.isInteger(amountValue) || amountValue <= 0)
@@ -60,8 +60,12 @@ export default function Home() {
       });
       setTransferResult(result);
       setWallet({ ...wallet, balance: result.remainingBalance });
-    } catch {
-      setSubmissionError("Unable to send treats. Please try again.");
+    } catch (error) {
+      setSubmissionError(
+        error instanceof ApiClientError
+          ? error.message
+          : "Unable to send treats. Please try again.",
+      );
     } finally {
       setSubmitting(false);
     }
@@ -71,6 +75,10 @@ export default function Home() {
     setTransferResult(null);
     setRecipientId("");
     setAmount("");
+  };
+
+  const handleTryAgain = () => {
+    setSubmissionError(null);
   };
 
   useEffect(() => {
@@ -158,6 +166,15 @@ export default function Home() {
                   </p>
                   <button className="btn btn-primary btn-lg w-100 fw-semibold" type="button" onClick={handleSendMore}>
                     Send More Treats
+                  </button>
+                </div>
+              ) : submissionError ? (
+                <div className="text-center" role="alert">
+                  <div className="display-5 mb-3" aria-hidden="true">⚠️</div>
+                  <h1 className="h3 fw-bold mb-2">Couldn&apos;t send treats</h1>
+                  <p className="text-body-secondary mb-4">{submissionError}</p>
+                  <button className="btn btn-primary btn-lg w-100 fw-semibold" type="button" onClick={handleTryAgain}>
+                    Try Again
                   </button>
                 </div>
               ) : (
