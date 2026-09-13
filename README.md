@@ -124,6 +124,28 @@ A successful request updates both balances in one SQLite transaction and creates
 - Multiple currencies
 - Production deployment infrastructure
 
+## AI-assisted workflow
+
+This project was developed with Devin as a coding agent. The work was divided into small phases and tasks, and each implementation task was reviewed, verified, and committed before moving to the next one.
+
+AI assistance was used to:
+
+- Translate the assignment into a deliberately narrow vertical slice
+- Plan the database schema and REST contracts
+- Implement the Express, SQLite, and Next.js code
+- Add API and persistence tests
+- Exercise the completed flow in a browser
+- Review accessibility, error behavior, and documentation
+
+Representative prompts included:
+
+- Define the minimum end-to-end transfer scope without adding authentication or unrelated wallet features.
+- Implement an atomic SQLite transfer that cannot overdraw the sender.
+- Add a controlled Next.js transfer form with processing, success, and error states.
+- Verify client validation, database rollback behavior, persistence, builds, and security audits.
+
+All generated changes were checked through code review, TypeScript builds, frontend linting, 19 backend tests, browser interaction, direct database inspection, and dependency audits. Architectural and scope decisions remain the author's responsibility.
+
 ## Verification
 
 Backend:
