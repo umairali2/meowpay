@@ -14,6 +14,16 @@ export default function Home() {
   const [recipients, setRecipients] = useState<Cat[]>([]);
   const [loading, setLoading] = useState(true);
   const [error, setError] = useState<string | null>(null);
+  const [recipientId, setRecipientId] = useState("");
+  const [amount, setAmount] = useState("");
+
+  const amountValue = Number(amount);
+  const amountError = amount && (!Number.isInteger(amountValue) || amountValue <= 0)
+    ? "Enter a positive whole number."
+    : amount && wallet && amountValue > wallet.balance
+      ? "Amount exceeds your available balance."
+      : null;
+  const formIsValid = Boolean(recipientId && amount && !amountError);
 
   const loadData = useCallback(async () => {
     setLoading(true);
@@ -109,27 +119,48 @@ export default function Home() {
                 </div>
               </div>
 
-              <div className="mb-3">
-                <label className="form-label fw-semibold" htmlFor="recipient">Send to</label>
-                <select className="form-select form-select-lg" id="recipient" disabled>
-                  <option>Select a cat</option>
-                  {recipients.map((recipient) => (
-                    <option key={recipient.id} value={recipient.id}>{recipient.name}</option>
-                  ))}
-                </select>
-              </div>
-
-              <div className="mb-4">
-                <label className="form-label fw-semibold" htmlFor="amount">Amount</label>
-                <div className="input-group input-group-lg">
-                  <input className="form-control" id="amount" inputMode="numeric" placeholder="0" disabled />
-                  <span className="input-group-text">🍪</span>
+              <form onSubmit={(event) => event.preventDefault()}>
+                <div className="mb-3">
+                  <label className="form-label fw-semibold" htmlFor="recipient">Send to</label>
+                  <select
+                    className="form-select form-select-lg"
+                    id="recipient"
+                    value={recipientId}
+                    onChange={(event) => setRecipientId(event.target.value)}
+                    required
+                  >
+                    <option value="">Select a cat</option>
+                    {recipients.map((recipient) => (
+                      <option key={recipient.id} value={recipient.id}>{recipient.name}</option>
+                    ))}
+                  </select>
                 </div>
-              </div>
 
-              <button className="btn btn-primary btn-lg w-100 fw-semibold" type="button" disabled>
-                Send Treats 🍪
-              </button>
+                <div className="mb-4">
+                  <label className="form-label fw-semibold" htmlFor="amount">Amount</label>
+                  <div className="input-group input-group-lg">
+                    <input
+                      className={`form-control ${amountError ? "is-invalid" : ""}`}
+                      id="amount"
+                      type="number"
+                      inputMode="numeric"
+                      min="1"
+                      max={wallet.balance}
+                      step="1"
+                      placeholder="0"
+                      value={amount}
+                      onChange={(event) => setAmount(event.target.value)}
+                      required
+                    />
+                    <span className="input-group-text">🍪</span>
+                    {amountError && <div className="invalid-feedback">{amountError}</div>}
+                  </div>
+                </div>
+
+                <button className="btn btn-primary btn-lg w-100 fw-semibold" type="submit" disabled={!formIsValid}>
+                  Send Treats 🍪
+                </button>
+              </form>
             </div>
           </section>
         )}
