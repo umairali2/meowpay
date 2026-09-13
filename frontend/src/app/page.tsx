@@ -115,6 +115,7 @@ export default function Home() {
           <span
             className="badge rounded-pill text-bg-warning fs-6 px-3 py-2"
             aria-label={wallet ? `Current balance: ${wallet.balance} treats` : "Balance unavailable"}
+            aria-live="polite"
           >
             🪙 {wallet?.balance ?? "—"}
           </span>
@@ -148,7 +149,7 @@ export default function Home() {
           <section className={`card border-0 shadow-sm mx-auto ${styles.transferCard}`}>
             <div className="card-body p-4 p-sm-5">
               {transferResult ? (
-                <div className="text-center">
+                <div className="text-center" role="status" aria-live="polite">
                   <div className="display-5 mb-3" aria-hidden="true">🎉</div>
                   <h1 className="h3 fw-bold mb-2">Treats Sent Successfully!</h1>
                   <p className="text-body-secondary mb-4">Your treats are on their way.</p>
@@ -192,7 +193,7 @@ export default function Home() {
                 </div>
               </div>
 
-              <form onSubmit={handleSubmit}>
+              <form onSubmit={handleSubmit} aria-busy={submitting}>
                 <div className="mb-3">
                   <label className="form-label fw-semibold" htmlFor="recipient">Send to</label>
                   <select
@@ -225,10 +226,12 @@ export default function Home() {
                       value={amount}
                       onChange={(event) => setAmount(event.target.value)}
                       disabled={submitting}
+                      aria-invalid={Boolean(amountError)}
+                      aria-describedby={amountError ? "amount-error" : undefined}
                       required
                     />
                     <span className="input-group-text">🍪</span>
-                    {amountError && <div className="invalid-feedback">{amountError}</div>}
+                    {amountError && <div className="invalid-feedback" id="amount-error">{amountError}</div>}
                   </div>
                 </div>
 
