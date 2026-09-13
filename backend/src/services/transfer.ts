@@ -65,7 +65,7 @@ export function createTransfer(database: MeowPayDatabase, recipientId: number, a
         sender: { id: sender.id, name: sender.name },
         recipient: { id: recipient.id, name: recipient.name },
         amount,
-        createdAt: transfer.createdAt,
+        createdAt: `${transfer.createdAt.replace(" ", "T")}Z`,
       },
       remainingBalance: sender.balance - amount,
     };
