@@ -29,7 +29,7 @@ MeowPay is a thin, end-to-end digital wallet slice where Whiskers sends treats t
 Clone the repository and open the project directory:
 
 ```bash
-git clone <repository-url>
+git clone https://github.com/umairali2/meowpay.git
 cd meowpay
 ```
 
